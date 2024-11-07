@@ -1,0 +1,3 @@
+/Users/francescomazzola/Project/Prova/Parallel Computing Mid Term/BigramsAndThreegrams/cmake-build-debug/CMakeFiles/BigramsAndThreegrams.dir
+/Users/francescomazzola/Project/Prova/Parallel Computing Mid Term/BigramsAndThreegrams/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/francescomazzola/Project/Prova/Parallel Computing Mid Term/BigramsAndThreegrams/cmake-build-debug/CMakeFiles/rebuild_cache.dir

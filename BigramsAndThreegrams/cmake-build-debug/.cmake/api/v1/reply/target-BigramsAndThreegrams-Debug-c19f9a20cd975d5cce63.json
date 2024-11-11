@@ -24,7 +24,7 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 6,
+				"line" : 13,
 				"parent" : 0
 			}
 		]
@@ -35,7 +35,7 @@
 			"compileCommandFragments" : 
 			[
 				{
-					"fragment" : "-g -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk -fcolor-diagnostics"
+					"fragment" : "-Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include -Xpreprocessor -fopenmp -g -std=gnu++20 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk -fcolor-diagnostics"
 				}
 			],
 			"language" : "CXX",
@@ -59,11 +59,11 @@
 		"commandFragments" : 
 		[
 			{
-				"fragment" : "-g",
+				"fragment" : "-Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include -Xpreprocessor -fopenmp -g",
 				"role" : "flags"
 			},
 			{
-				"fragment" : "",
+				"fragment" : "-L/opt/homebrew/opt/libomp/lib -lomp -L/opt/homebrew/opt/libomp/lib -lomp",
 				"role" : "flags"
 			}
 		],

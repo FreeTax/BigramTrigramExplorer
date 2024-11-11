@@ -16,6 +16,7 @@
 					],
 					"linkDirectories" : 
 					[
+						"/opt/homebrew/opt/libomp/lib",
 						"/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/usr/lib",
 						"/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/usr/lib/swift"
 					],
@@ -23,7 +24,10 @@
 					[
 						"/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/System/Library/Frameworks"
 					],
-					"linkLibraries" : []
+					"linkLibraries" : 
+					[
+						"omp"
+					]
 				},
 				"path" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc",
 				"version" : "16.0.0.16000026"
@@ -43,6 +47,7 @@
 				{
 					"includeDirectories" : 
 					[
+						"/opt/homebrew/opt/libomp/include",
 						"/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/usr/include/c++/v1",
 						"/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/16/include",
 						"/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/usr/include",
@@ -50,6 +55,7 @@
 					],
 					"linkDirectories" : 
 					[
+						"/opt/homebrew/opt/libomp/lib",
 						"/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/usr/lib",
 						"/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.0.sdk/usr/lib/swift"
 					],
@@ -59,6 +65,7 @@
 					],
 					"linkLibraries" : 
 					[
+						"omp",
 						"c++"
 					]
 				},

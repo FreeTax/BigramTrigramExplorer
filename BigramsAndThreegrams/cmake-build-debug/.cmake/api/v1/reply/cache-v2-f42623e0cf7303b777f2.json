@@ -207,7 +207,7 @@
 				}
 			],
 			"type" : "STRING",
-			"value" : ""
+			"value" : "-Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include"
 		},
 		{
 			"name" : "CMAKE_CXX_FLAGS_DEBUG",
@@ -411,7 +411,7 @@
 				}
 			],
 			"type" : "STRING",
-			"value" : ""
+			"value" : "-L/opt/homebrew/opt/libomp/lib -lomp"
 		},
 		{
 			"name" : "CMAKE_EXE_LINKER_FLAGS_DEBUG",

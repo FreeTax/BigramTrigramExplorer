@@ -9,26 +9,30 @@
 
 // Function to compute bigrams (parallelized or sequential)
 void compute_bigrams(const std::vector<std::string>& words, std::unordered_map<std::string, int>& bigram_count, bool parallel, int num_threads) {
+    // Create a vector of local maps, one for each thread
+    std::vector<std::unordered_map<std::string, int>> thread_local_bigrams(num_threads);
+
 #pragma omp parallel if(parallel) num_threads(num_threads)
     {
-        std::unordered_map<std::string, int> local_bigrams;
+        int thread_id = omp_get_thread_num(); // Get the thread ID
+        std::unordered_map<std::string, int>& local_bigrams = thread_local_bigrams[thread_id];
 
-        // Each thread processes a part of the words
+        // Each thread processes its portion of the words
 #pragma omp for
         for (size_t i = 0; i < words.size() - 1; i++) {
             std::string bigram = words[i] + " " + words[i + 1];
             local_bigrams[bigram]++;
         }
+    }
 
-        // Merge local results into the global map
-#pragma omp critical
-        {
-            for (const auto& pair : local_bigrams) {
-                bigram_count[pair.first] += pair.second;
-            }
+    // Merge local maps into the global map
+    for (const auto& local_map : thread_local_bigrams) {
+        for (const auto& pair : local_map) {
+            bigram_count[pair.first] += pair.second;
         }
     }
 }
+
 
 // Function to compute trigrams (parallelized or sequential)
 void compute_trigrams(const std::vector<std::string>& words, std::unordered_map<std::string, int>& trigram_count, bool parallel, int num_threads) {

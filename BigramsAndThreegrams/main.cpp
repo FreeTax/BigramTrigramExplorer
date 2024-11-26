@@ -4,57 +4,66 @@
 #include <vector>
 #include <sstream>
 #include <omp.h>
-#include <iomanip>
 #include <numeric> // For std::accumulate
+#include <string>
 
-// Function to compute bigrams (parallelized or sequential)
+
+// Funzione di hash per calcolare l'indice di un bigramma
+size_t bigram_hash(const std::string& word1, const std::string& word2, size_t table_size) {
+    std::hash<std::string> hasher;
+    return (hasher(word1) ^ (hasher(word2) << 1)) % table_size;
+}
+
 void compute_bigrams(const std::vector<std::string>& words, std::unordered_map<std::string, int>& bigram_count, bool parallel, int num_threads) {
-    // Create a vector of local maps, one for each thread
-    std::vector<std::unordered_map<std::string, int>> thread_local_bigrams(num_threads);
+    const size_t table_size = 1 << 20; // Dimensione della tabella (es: 2^20 celle)
+    std::vector<int> bigram_table(table_size, 0); // Struttura preallocata
 
 #pragma omp parallel if(parallel) num_threads(num_threads)
     {
-        int thread_id = omp_get_thread_num(); // Get the thread ID
-        std::unordered_map<std::string, int>& local_bigrams = thread_local_bigrams[thread_id];
-
-        // Each thread processes its portion of the words
+        // Ogni thread accede direttamente al vettore globale
 #pragma omp for
         for (size_t i = 0; i < words.size() - 1; i++) {
-            std::string bigram = words[i] + " " + words[i + 1];
-            local_bigrams[bigram]++;
+            size_t index = bigram_hash(words[i], words[i + 1], table_size);
+
+            // Incremento atomico sulla singola cella
+#pragma omp atomic
+            bigram_table[index]++;
         }
     }
 
-    // Merge local maps into the global map
-    for (const auto& local_map : thread_local_bigrams) {
-        for (const auto& pair : local_map) {
-            bigram_count[pair.first] += pair.second;
-        }
-    }
 }
 
 
-// Function to compute trigrams (parallelized or sequential)
+
+// Funzione di hash per calcolare l'indice di un trigramma
+size_t trigram_hash(const std::string& word1, const std::string& word2, const std::string& word3, size_t table_size) {
+    std::hash<std::string> hasher;
+    return (hasher(word1) ^ (hasher(word2) << 1) ^ (hasher(word3) << 2)) % table_size;
+}
+
 void compute_trigrams(const std::vector<std::string>& words, std::unordered_map<std::string, int>& trigram_count, bool parallel, int num_threads) {
+    const size_t table_size = 1 << 20; // Dimensione della tabella (es: 2^20 celle)
+    std::vector<std::atomic<int>> trigram_table(table_size); // Tabella globale atomica
+
+    // Inizializza la tabella
+    for (size_t i = 0; i < table_size; ++i) {
+        trigram_table[i] = 0;
+    }
+
 #pragma omp parallel if(parallel) num_threads(num_threads)
     {
-        std::unordered_map<std::string, int> local_trigrams;
-
-        // Each thread processes a part of the words
+        // Ogni thread processa un sottoinsieme delle parole
 #pragma omp for
         for (size_t i = 0; i < words.size() - 2; i++) {
-            std::string trigram = words[i] + " " + words[i + 1] + " " + words[i + 2];
-            local_trigrams[trigram]++;
-        }
+            // Calcola l'hash del trigramma
+            size_t index = trigram_hash(words[i], words[i + 1], words[i + 2], table_size);
 
-        // Merge local results into the global map
-#pragma omp critical
-        {
-            for (const auto& pair : local_trigrams) {
-                trigram_count[pair.first] += pair.second;
-            }
+            // Incremento atomico sulla cella
+            trigram_table[index].fetch_add(1, std::memory_order_relaxed);
         }
     }
+
+
 }
 
 // Function to run a single trial and measure time
@@ -95,7 +104,7 @@ int main() {
 
     // Fractions of the text to test
     std::vector<double> fractions = {0.1, 0.25, 0.5, 1.0};
-    std::vector<int> thread_counts = {2, 4, 6, 8, 10, 12, 16};
+    std::vector<int> thread_counts = {2, 4, 6, 8, 11, 12, 14, 16, 20, 24, 32};
 
     // Output results
     std::ofstream result_file("timing_results.txt");
@@ -113,13 +122,26 @@ int main() {
         for (bool is_bigram : {true, false}) {
             std::cout << "Running tests for " << (is_bigram ? "bigrams" : "trigrams") << "...\n";
 
-            // Sequential test
-            double baseline_time = run_trial(subset, false, is_bigram, 1);
+            // Sequential test: Perform only 3 trials
+            double baseline_time = 0.0;
+            std::vector<double> seq_times;
+
+            for (int i = 0; i < 3; ++i) {
+                double time = run_trial(subset, false, is_bigram, 1);
+                seq_times.push_back(time);
+            }
+
+            baseline_time = std::accumulate(seq_times.begin(), seq_times.end(), 0.0) / seq_times.size();
+
             result_file << "N-gram: " << (is_bigram ? "Bigrams" : "Trigrams") << "\n";
             result_file << "Parallelization: No\n";
             result_file << "Threads: 1\n";
             result_file << "Text size: " << current_size << " words (" << fraction * 100 << "% of full text)\n";
-            result_file << "Time: " << baseline_time << " seconds\n";
+            result_file << "Execution times (3 trials): ";
+            for (const auto& t : seq_times) {
+                result_file << t << " ";
+            }
+            result_file << "\nAverage time: " << baseline_time << " seconds\n";
             result_file << std::string(80, '-') << "\n";
 
             // Parallelized tests
@@ -156,3 +178,4 @@ int main() {
     std::cout << "Results saved in 'timing_results.txt'.\n";
     return 0;
 }
+
